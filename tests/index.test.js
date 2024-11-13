@@ -79,8 +79,9 @@ describe("Authentication", () => {
     });
 });
 
-describe("User Information endpoints", () => {
+describe("User metadata endpoint", () => {
     let token = "";
+    let avatarID = "";
     beforeAll(async () => {
         const username = `vinod-${Math.random()}`;
         const password = 123456;
@@ -97,9 +98,57 @@ describe("User Information endpoints", () => {
         );
 
         token = response.body.token;
+        const avatarResponse = await axios.post(
+            `${BACKEND_URL}/api/v1/admin/avatar`,
+            {
+                imageUrl:
+                    "https://imgs.search.brave.com/4IpvuncRGbAjT61ftqMWVqqXMXyXJCY_nROtazb0H2A/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/cHJlbWl1bS12ZWN0/b3IvbWFsZS1ib3kt/Y2hhcmFjdGVyLWF2/YXRhci1wcm9maWxl/XzEwOTAzOTQtMTMw/ODExLmpwZz9zaXpl/PTYyNiZleHQ9anBn",
+                name: "timmy",
+            }
+        );
+        avatarID = avatarResponse.data.avatarID;
     });
 
-    test1("test1", () => {});
-    test1("test1", () => {});
-    test1("test1", () => {});
+    test("User cant update metadata with a wrong avatar id", async () => {
+        const response = await axios.post(
+            `${BACKEND_URL}/api/v1/user/metadata`,
+            {
+                avatarID: "121432423",
+            },
+            {
+                headers: {
+                    authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        expect(response).toBe(400);
+    });
+    test("User can update metadata with the right avatar id", async () => {
+        const response = await axios.post(
+            `${BACKEND_URL}/api/v1/user/metadata`,
+            {
+                avatarID,
+            },
+            {
+                headers: {
+                    authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        expect(response).toBe(200);
+    });
+    test("User is not able to update metadata if the auth header is not present", async () => {
+        const response = await axios.post(
+            `${BACKEND_URL}/api/v1/user/metadata`,
+            {
+                avatarID,
+            },
+            {
+                headers: {
+                    authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        expect(response).toBe(403);
+    });
 });
