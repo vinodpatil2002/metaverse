@@ -152,3 +152,50 @@ describe("User metadata endpoint", () => {
         expect(response).toBe(403);
     });
 });
+
+describe("User avatar information", () => {
+    let avatarID;
+    let token;
+    let userId;
+
+    beforeAll(async () => {
+        const username = `vinod-${Math.random()}`;
+        const password = 123456;
+        const signupResponse = await axios.post(
+            `${BACKEND_URL}/api/v1/signup`,
+            {
+                username,
+                password,
+                type: "admin",
+            }
+        );
+
+        userId = signupResponse.data.userId;
+        const response = await axios.post(
+            `${BACKEND_URL}/api/v1/signin`,
+            async () => {
+                username, password;
+            }
+        );
+
+        token = response.body.token;
+        const avatarResponse = await axios.post(
+            `${BACKEND_URL}/api/v1/admin/avatar`,
+            {
+                imageUrl:
+                    "https://imgs.search.brave.com/4IpvuncRGbAjT61ftqMWVqqXMXyXJCY_nROtazb0H2A/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/cHJlbWl1bS12ZWN0/b3IvbWFsZS1ib3kt/Y2hhcmFjdGVyLWF2/YXRhci1wcm9maWxl/XzEwOTAzOTQtMTMw/ODExLmpwZz9zaXpl/PTYyNiZleHQ9anBn",
+                name: "timmy",
+            }
+        );
+        avatarID = avatarResponse.data.avatarID;
+    });
+
+    test("Get back avatar information for the user", async () => {
+        const avatar = axios.get(
+            `${BACKEND_URL}/api/v1/user/metadata/bulk?ids=[${userId}]`
+        );
+        expect(response.data.avatars.length).toBe(1);
+        expect(response.data.avatars[0].userId).toBe(userId);
+    });
+    
+});
